@@ -18,19 +18,20 @@ class Controller {
     getUserAuth()
       .createUser({
         email,
-        emailVerified: false,
+        emailVerified: true, // TODO: Change this to false after testing
         password,
         displayName: name,
         disabled: false,
       })
       .then((userRecord) => {
-        createOrUpdateRegisteredUser(userRecord, req.body)
-          .then(() => {
-            // email, password, refCode, platformType and fcmToken are available in the req.body
+        const crud = new Crud(getDBRef);
+        const userData = { emailVerified: true, name, email };
+        crud
+          .updateValueAsync(`${PATH_TO.users}/${userRecord.uid}`, userData, (error) => {
+            if (error) return res.status(500).json({ status: 500, message: 'Failed to update', errorCode: ERROR_CODES.SERVER_ERROR });
             this.loginWithEmail(req, res);
           })
           .catch((error) => {
-            // todo add logs here
             return res.status(500).json({
               status: 500,
               message: 'User was created successfully but we failed to save user data.',
@@ -52,9 +53,6 @@ class Controller {
       // email, password, platformType, app_language and fcmToken are available in the req.body
       const email = req.body.email || res.locals.email;
       const password = req.body.password || res.locals.password;
-      const current_platform = req.body.platformType || null;
-      const fcmToken = req.body.fcmToken || null;
-      const app_language = req.body.app_language || null;
 
       if (!email || !password) throw { status: 401, message: 'Missing Params', errorCode: ERROR_CODES.MISSING_PARAMS };
 
@@ -78,28 +76,8 @@ class Controller {
       const token = user.idToken;
       const refreshToken = user.refreshToken;
 
-      const userInfo = {
-        last_seen: new Date().toISOString(),
-        current_platform: current_platform,
-        app_language: app_language,
-      };
-
-      if (current_platform === 'web') {
-        userInfo.webToken = fcmToken || null;
-      } else {
-        userInfo.token = fcmToken || null;
-      }
-
       try {
         const auth = new Auth(getUserAuth);
-        const { isNotIprepUser } = await migrateOldUser(user.localId);
-        if (isNotIprepUser) {
-          auth.getUserByToken(user.idToken).then((decodedToken) => {
-            createOrUpdateRegisteredUser(decodedToken, req.body);
-          });
-        }
-
-        new Crud(getDBRef).updateValueAsync(`${PATH_TO.users}/${user.localId}`, userInfo, (error) => {});
 
         auth
           .getUserByToken(token)
@@ -243,5 +221,24 @@ class Controller {
     }
   };
 }
+
+const createOrUpdateRegisteredUser = (userRecord) => {
+  return new Promise((resolve, reject) => {
+    if (!userRecord || !userRecord.uid) return reject({ message: 'Missing uid in userRecord!' });
+
+    const crud = new Crud(getDatabaseRefIprepSuperApp);
+    crud.getValueAsync(`${PATH_TO.users}/${userRecord.uid}`, (error, userData) => {
+      if (error) {
+        return reject({ message: 'Authorization denied while updating user data in the db' });
+      }
+      crud.updateValueAsync(`${PATH_TO.users}/${userRecord.uid}`, userRecord, async (error) => {
+        if (error) {
+          return reject({ message: 'Authorization denied while updating user data in the db' });
+        }
+        return resolve();
+      });
+    });
+  });
+};
 
 export default Controller;
