@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import express from 'express';
 import { initializeFirebaseApp } from './db/db.js';
 import { ERROR_CODES, MESSAGE } from './global/global.vars.js';
-import commonRoutes from './routes/common.routes.js';
+import commonRoutes from './routes/auth.routes.js';
 initializeFirebaseApp();
 
 dotenv.config();

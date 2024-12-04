@@ -5,12 +5,6 @@ import { ensureAuthenticated } from '../middleware/auth.middleware.js';
 const router = Router();
 const controller = new Controller();
 
-router.get('/', controller.home);
-router.post('/loginWithEmail', controller.loginWithEmail);
-router.post('/signupWithEmail', controller.signupWithEmail);
-router.post('/logout', ensureAuthenticated, controller.logout);
-router.post('/refreshIdToken', controller.refreshIdToken);
-router.post('/resetPassword', controller.resetPassword);
-router.delete('/delete', ensureAuthenticated, controller.delete);
+router.post('/saveUser', ensureAuthenticated, controller.saveUser);
 
 export default router;
