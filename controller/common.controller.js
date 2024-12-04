@@ -3,7 +3,7 @@ import { password_reset_template } from '../global/global.template.js';
 import { MESSAGE, ERROR_CODES } from '../global/global.vars.js';
 import { PATH_TO } from '../global/iprepapp.global.vars.js';
 import Auth from '../utils/auth.utils.js';
-import { getResponseObj, httpRequest, sendMail } from '../utils/common.utils.js';
+import { generateAlphanumeric, getResponseObj, httpRequest, sendMail } from '../utils/common.utils.js';
 import Crud from '../utils/crud.utils.js';
 import { getDBRef } from '../db/db.js';
 
@@ -26,18 +26,16 @@ class Controller {
       .then((userRecord) => {
         const crud = new Crud(getDBRef);
         const userData = { emailVerified: true, name, email };
-        crud
-          .updateValueAsync(`${PATH_TO.users}/${userRecord.uid}`, userData, (error) => {
-            if (error) return res.status(500).json({ status: 500, message: 'Failed to update', errorCode: ERROR_CODES.SERVER_ERROR });
-            this.loginWithEmail(req, res);
-          })
-          .catch((error) => {
-            return res.status(500).json({
-              status: 500,
-              message: 'User was created successfully but we failed to save user data.',
-              errorCode: ERROR_CODES.SERVER_ERROR,
+        crud.updateValueAsync(`${PATH_TO.users}/${userRecord.uid}`, userData, (error) => {
+          if (error) return res.status(500).json({ status: 500, message: 'Failed to update', errorCode: ERROR_CODES.SERVER_ERROR });
+          referralCode(userRecord.uid)
+            .then(({ referralCode }) => {
+              this.loginWithEmail(req, res, referralCode);
+            })
+            .catch((e) => {
+              res.status(500).json({ status: 500, message: 'Failed to update', errorCode: ERROR_CODES.SERVER_ERROR });
             });
-          });
+        });
       })
       .catch((error) => {
         return res.status(error.status || 401).json({
@@ -48,7 +46,7 @@ class Controller {
       });
   };
 
-  loginWithEmail = async (req, res) => {
+  loginWithEmail = async (req, res, referralCode) => {
     try {
       // email, password, platformType, app_language and fcmToken are available in the req.body
       const email = req.body.email || res.locals.email;
@@ -83,9 +81,9 @@ class Controller {
           .getUserByToken(token)
           .then((decodeToken) => {
             const emailVerified = decodeToken.email_verified;
-            const response_obj = { token, emailVerified, refreshToken };
+            const response_obj = { token, emailVerified, refreshToken, referralCode };
 
-            res.json({ status: 200, message: 'User logged in', data: response_obj });
+            return res.json({ status: 200, message: 'User logged in', data: response_obj });
           })
           .catch((error) => {
             return res.status(401).json({ status: 401, message: 'User not authorized', errorCode: ERROR_CODES.UNAUTHORIZED });
@@ -222,22 +220,51 @@ class Controller {
   };
 }
 
-const createOrUpdateRegisteredUser = (userRecord) => {
-  return new Promise((resolve, reject) => {
-    if (!userRecord || !userRecord.uid) return reject({ message: 'Missing uid in userRecord!' });
+const referralCode = async (uid) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const path = PATH_TO.user_types;
+      if (!path) return reject({ status: 400, errorCode: ERROR_CODES['400'], msg: 'Bad Request' });
+      const userPath = PATH_TO.user_maps;
+      if (!userPath) return reject({ status: 400, errorCode: ERROR_CODES['400'], msg: 'Bad Request' });
+      const crud = new Crud(getDBRef);
+      let generateReferralCode;
+      const options = {
+        method: 'GET',
+        url: `${process.env.DATABASE_URL}/${userPath}/referral_code_user_relation.json?shallow=true`,
+        json: true,
+      };
+      const { body: referralCodeObj } = await httpRequest(options);
+      do {
+        generateReferralCode = generateAlphanumeric();
+      } while (referralCodeObj?.hasOwnProperty(generateReferralCode));
 
-    const crud = new Crud(getDatabaseRefIprepSuperApp);
-    crud.getValueAsync(`${PATH_TO.users}/${userRecord.uid}`, (error, userData) => {
-      if (error) {
-        return reject({ message: 'Authorization denied while updating user data in the db' });
+      const userReferralObj = {
+        referralCode: generateReferralCode,
+        timeOfCreation: +new Date(),
+        uid,
+      };
+      try {
+        crud.getValueAsync(`${userPath}/user_referral_code_relation/${uid}`, (error, data) => {
+          if (data) {
+            return reject('Referral Code already exists');
+          }
+          crud.setValueAsync(`${userPath}/referral_code_user_relation/${generateReferralCode}`, uid, (error) => {
+            crud.setValueAsync(`${userPath}/user_referral_code_relation/${uid}`, userReferralObj, (error) => {
+              return resolve({ status: 201, message: MESSAGE['201'], referralCode: generateReferralCode });
+            });
+          });
+        });
+      } catch (error) {
+        return reject({
+          status: 500,
+          message: MESSAGE['500'],
+          errorCode: ERROR_CODES['SERVER_ERROR'],
+        });
       }
-      crud.updateValueAsync(`${PATH_TO.users}/${userRecord.uid}`, userRecord, async (error) => {
-        if (error) {
-          return reject({ message: 'Authorization denied while updating user data in the db' });
-        }
-        return resolve();
-      });
-    });
+    } catch (error) {
+      return reject({ status: 500, message: MESSAGE['500'], errorCode: ERROR_CODES['SERVER_ERROR'] });
+    }
   });
 };
 
