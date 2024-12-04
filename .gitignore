@@ -1,0 +1,15 @@
+node_modules/
+public/
+**/.DS_Store
+.env
+extra
+.babelrc
+package-lock.json
+api.controller.js
+api.routes.js
+api.utils.js
+pnpm-lock.yaml
+scripts
+temp/
+generated/
+secrets/
