@@ -3,7 +3,7 @@ import { password_reset_template } from '../global/global.template.js';
 import { MESSAGE, ERROR_CODES } from '../global/global.vars.js';
 import { PATH_TO } from '../global/iprepapp.global.vars.js';
 import Auth from '../utils/auth.utils.js';
-import { generateAlphanumeric, getResponseObj, httpRequest, sendMail } from '../utils/common.utils.js';
+import { getResponseObj, httpRequest, referralCode, sendMail } from '../utils/common.utils.js';
 import Crud from '../utils/crud.utils.js';
 import { getDBRef } from '../db/db.js';
 
@@ -219,53 +219,5 @@ class Controller {
     }
   };
 }
-
-const referralCode = async (uid) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const path = PATH_TO.user_types;
-      if (!path) return reject({ status: 400, errorCode: ERROR_CODES['400'], msg: 'Bad Request' });
-      const userPath = PATH_TO.user_maps;
-      if (!userPath) return reject({ status: 400, errorCode: ERROR_CODES['400'], msg: 'Bad Request' });
-      const crud = new Crud(getDBRef);
-      let generateReferralCode;
-      const options = {
-        method: 'GET',
-        url: `${process.env.DATABASE_URL}/${userPath}/referral_code_user_relation.json?shallow=true`,
-        json: true,
-      };
-      const { body: referralCodeObj } = await httpRequest(options);
-      do {
-        generateReferralCode = generateAlphanumeric();
-      } while (referralCodeObj?.hasOwnProperty(generateReferralCode));
-
-      const userReferralObj = {
-        referralCode: generateReferralCode,
-        timeOfCreation: +new Date(),
-        uid,
-      };
-      try {
-        crud.getValueAsync(`${userPath}/user_referral_code_relation/${uid}`, (error, data) => {
-          if (data) {
-            return reject('Referral Code already exists');
-          }
-          crud.setValueAsync(`${userPath}/referral_code_user_relation/${generateReferralCode}`, uid, (error) => {
-            crud.setValueAsync(`${userPath}/user_referral_code_relation/${uid}`, userReferralObj, (error) => {
-              return resolve({ status: 201, message: MESSAGE['201'], referralCode: generateReferralCode });
-            });
-          });
-        });
-      } catch (error) {
-        return reject({
-          status: 500,
-          message: MESSAGE['500'],
-          errorCode: ERROR_CODES['SERVER_ERROR'],
-        });
-      }
-    } catch (error) {
-      return reject({ status: 500, message: MESSAGE['500'], errorCode: ERROR_CODES['SERVER_ERROR'] });
-    }
-  });
-};
 
 export default Controller;
