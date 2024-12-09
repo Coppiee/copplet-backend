@@ -13,3 +13,4 @@ scripts
 temp/
 generated/
 secrets/
+.netlify

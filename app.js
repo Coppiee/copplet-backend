@@ -4,6 +4,7 @@ import express from 'express';
 import { initializeFirebaseApp } from './db/db.js';
 import { ERROR_CODES, MESSAGE } from './global/global.vars.js';
 import commonRoutes from './routes/common.routes.js';
+import authRoutes from './routes/auth.routes.js';
 initializeFirebaseApp();
 
 dotenv.config();
@@ -14,6 +15,7 @@ app.use(express.json({ limit: '100mb', extended: true }));
 
 app.set('PORT', process.argv[3] || process.env.PORT);
 app.use('/api', commonRoutes);
+app.use('/api', authRoutes);
 
 app.all('*', (req, res) => {
   res.status(400).json({ status: 400, message: MESSAGE['400'], errorCode: ERROR_CODES.BAD_REQUEST });
