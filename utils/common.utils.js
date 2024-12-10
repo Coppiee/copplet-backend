@@ -90,12 +90,6 @@ const sendMail = (mailOptions) => {
 
 const getResponseObj = (error) => {
   let resObj;
-
-  /** //! temp fix
-   * For some reason, following error is coming
-   * 'Firebase ID token has "kid" claim which does not correspond to a known public key. Most likely the ID token is expired, so get a fresh token from your client app and try again.'
-   * To temporarily fix it, sending the 'Token Expired' message to front-end in order to get the token refreshed
-   * */
   if (error.code === 'auth/argument-error' || error.code === 'auth/id-token-expired') {
     resObj = {
       status: 401,
