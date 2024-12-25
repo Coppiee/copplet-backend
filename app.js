@@ -9,6 +9,7 @@ initializeFirebaseApp();
 
 dotenv.config();
 const app = express();
+console.log("Sarthak");
 
 app.use(cors());
 app.use(express.json({ limit: '100mb', extended: true }));
