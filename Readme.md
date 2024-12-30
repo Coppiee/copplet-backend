@@ -21,6 +21,7 @@ Copplet Server is a single backend server for [Copplet App](https://copplet.com/
 ## Deployments
 
 - Heroku
+- Render
 
 ## Run Project
 
