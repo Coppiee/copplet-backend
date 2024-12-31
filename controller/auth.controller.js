@@ -107,7 +107,7 @@ class Controller {
   refreshIdToken = async (req, res) => {
     try {
       const refreshToken = req.body.refreshToken;
-      if (!refreshToken) throw { status: 400, messgage: 'Token unavailable', errorCode: ERROR_CODES.AUTH_TOKEN_UNAVAILABLE };
+      if (!refreshToken) throw { status: 400, message: 'Token unavailable', errorCode: ERROR_CODES.AUTH_TOKEN_UNAVAILABLE };
       const auth = new Auth(getUserAuth);
       const data = await auth.refreshIdToken(refreshToken);
       if (!data) throw { status: 404, message: 'Error while refreshing token', errorCode: ERROR_CODES.AUTH_TOKEN_UNAVAILABLE };

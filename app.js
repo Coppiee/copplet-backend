@@ -17,6 +17,10 @@ app.set('PORT', process.argv[3] || process.env.PORT);
 app.use('/api', commonRoutes);
 app.use('/api', authRoutes);
 
+app.get('/', (req, res) => {
+  res.redirect('/api/');
+});
+
 app.all('*', (req, res) => {
   res.status(400).json({ status: 400, message: MESSAGE['400'], errorCode: ERROR_CODES.BAD_REQUEST });
 });
