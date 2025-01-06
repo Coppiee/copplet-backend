@@ -1,0 +1,32 @@
+{
+  "name": "iprep-store-server",
+  "version": "1.0.0",
+  "description": "iPrep Store Server is the backend to the iPrep App including the Store.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "debug": "nodemon --inspect server.js",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --watch --runInBand --detectOpenHandles"
+  },
+  "author": "iDream Education Pvt Ltd",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "firebase": "^9.15.0",
+    "firebase-admin": "^12.5.0",
+    "mongodb": "^6.3.0",
+    "mongoose": "^8.0.1",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.20",
+    "supertest": "^6.3.3"
+  }
+}
