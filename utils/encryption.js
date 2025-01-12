@@ -1,7 +1,7 @@
 import CryptoJS from "crypto-js";
 
-const privateKey = process.env.PRIVATE_KEY || 'mySecretKey1234567890123456';
-const sharedKey = process.env.SHARED_KEY || 'mysharedKey1234567890';
+const privateKey = process.env.PRIVATE_KEY;
+const sharedKey = process.env.SHARED_KEY;
 
 export const encrypt = (text, key) => {
     return CryptoJS.AES.encrypt(text, key).toString();

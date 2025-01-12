@@ -1,4 +1,4 @@
-import Note from "../models/Note.js";
+import Note from "../models/note.js";
 import { encrypt, decrypt, keys } from "../utils/encryption.js";
 
 class Controller {
