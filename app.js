@@ -21,6 +21,10 @@ app.use('/api', commonRoutes);
 app.use('/api', authRoutes);
 app.use('/api', noteRoutes);
 
+app.get('/', (req, res) => {
+  res.redirect('/api/');
+});
+
 app.all('*', (req, res) => {
   res.status(400).json({ status: 400, message: MESSAGE['400'], errorCode: ERROR_CODES.BAD_REQUEST });
 });

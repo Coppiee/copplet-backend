@@ -11,6 +11,9 @@ class Controller {
   saveUser = async (req, res) => {
     const userData = req.body;
     const uid = res.locals.uid;
+    if (!uid){
+      return res.status(400).json({status: 400, message: `UID not found`, errorCode: ERROR_CODES.BAD_REQUEST});
+    }
     if (!Object.keys(userData).length)
       return res.status(400).json({ status: 400, message: 'User data is required', errorCode: ERROR_CODES.BAD_REQUEST });
     const crud = new Crud(getDBRef);
