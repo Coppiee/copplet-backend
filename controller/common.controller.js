@@ -19,6 +19,21 @@ class Controller {
       return res.status(200).json({ status: 200, message: 'User data saved successfully', errorCode: ERROR_CODES.SUCCESS });
     });
   };
+
+  getUserInfo = async (req, res) =>{
+    try {
+      const userId = req.body.id;
+      const userDoc = await getDBRef().child(`users/${userId}`).get();
+      if (!userDoc.exists()) {
+        return res.status(404).json({ status: 404, message: "User not found", errorCode: "user/not-found"});
+      }
+      const userInfo = userDoc.val();
+      res.status(200).json(userInfo);
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+      res.status(500).json({ status: 500, message: "Internal Server Error", errorCode: "code/internal-server-error" });
+    }
+  };
 }
 
 export default Controller;
