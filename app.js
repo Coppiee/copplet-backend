@@ -17,9 +17,9 @@ app.use(cors());
 app.use(express.json({ limit: '100mb', extended: true }));
 
 app.set('PORT', process.argv[3] || process.env.PORT);
+app.use('/api', noteRoutes);
 app.use('/api', commonRoutes);
 app.use('/api', authRoutes);
-app.use('/api', noteRoutes);
 
 app.get('/', (req, res) => {
   res.redirect('/api/');

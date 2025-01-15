@@ -10,7 +10,7 @@ router.post('/loginWithEmail', controller.loginWithEmail);
 router.post('/signupWithEmail', controller.signupWithEmail);
 router.post('/logout', ensureAuthenticated, controller.logout);
 router.post('/refreshIdToken', controller.refreshIdToken);
-router.post('/resetPassword', controller.resetPassword);
-router.delete('/delete', ensureAuthenticated, controller.delete);
+router.post('/resetPassword', controller.resetPassword); // Todo: work on this
+router.delete('/delete', ensureAuthenticated, controller.delete); // Todo: work on this
 
 export default router;
