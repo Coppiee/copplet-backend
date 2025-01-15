@@ -23,20 +23,28 @@ class Controller {
     });
   };
 
-  getUserInfo = async (req, res) =>{
-    try {
-      const userId = req.body.id;
-      const userDoc = await getDBRef().child(`users/${userId}`).get();
-      if (!userDoc.exists()) {
-        return res.status(404).json({ status: 404, message: "User not found", errorCode: "user/not-found"});
-      }
-      const userInfo = userDoc.val();
-      res.status(200).json(userInfo);
-    } catch (error) {
-      console.error("Error fetching user info:", error);
-      res.status(500).json({ status: 500, message: "Internal Server Error", errorCode: "code/internal-server-error" });
+  fetchUserInfo = (req, res) => {
+    const uid = res.locals.uid;
+    if (!uid) {
+      return res.status(400).json({ status: 400, message: 'UID not found', errorCode: ERROR_CODES.BAD_REQUEST });
     }
-  };
+    try {
+      const crud = new Crud(getDBRef);
+      crud.getValueAsync(`${PATH_TO.users}/${uid}`, (error, userDoc) => {
+        if (error) {
+          console.error('Error fetching user info:', error);
+          return res.status(500).json({ status: 500, message: 'Internal Server Error', errorCode: 'code/internal-server-error' });
+        }
+        if (!userDoc) {
+          return res.status(404).json({ status: 404, message: 'User not found', errorCode: 'user/not-found' });
+        }
+        return res.status(200).json(userDoc);
+      });
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+      return res.status(500).json({ status: 500, message: 'Internal Server Error', errorCode: 'code/internal-server-error' });
+    }
+  };  
 }
 
 export default Controller;
