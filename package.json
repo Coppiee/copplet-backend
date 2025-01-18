@@ -22,7 +22,8 @@
     "firebase-admin": "^12.5.0",
     "mongodb": "^6.3.0",
     "mongoose": "^8.0.1",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "jest": "^29.5.0",
