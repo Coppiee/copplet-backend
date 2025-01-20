@@ -6,5 +6,6 @@ const router = Router();
 const controller = new Controller();
 
 router.post('/saveUser', ensureAuthenticated, controller.saveUser);
+router.get('/userInfo', ensureAuthenticated, controller.fetchUserInfo);
 
 export default router;
