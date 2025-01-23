@@ -1,7 +1,9 @@
 import Auth from '../utils/auth.utils.js';
 import { getResponseObj } from '../utils/common.utils.js';
 import { ERROR_CODES } from '../global/global.vars.js';
-import { getUserAuth } from '../db/db.js';
+import { getDBRef, getUserAuth } from '../db/db.js';
+import { PATH_TO } from '../global/iprepapp.global.vars.js';
+import Crud from '../utils/crud.utils.js';
 
 export const ensureAuthenticated = (req, res, next) => {
   //const apiKey = req.header('X-API-Key');
@@ -39,4 +41,16 @@ export const ensureAuthenticated = (req, res, next) => {
       const resObj = getResponseObj(error);
       return res.status(resObj.status || 500).json(resObj);
     });
+};
+
+export const fetchUserLocalInfo = (req, res, next) => {
+  const uid = res.locals.uid;
+  if (!uid) return res.status(400).json({ status: 400, message: 'Uid not found', errorCode: ERROR_CODES.BAD_REQUEST });
+  const crud = new Crud(getDBRef);
+  crud.getValueAsync(`${PATH_TO.users}/${uid}`, (error, userData) => {
+    if (error) return res.status(401).json({ status: 401, message: 'Unauthorized', errorCode: ERROR_CODES.UNAUTHORIZED });
+    if (!userData) return res.status(404).json({ status: 404, message: 'User not found', errorCode: ERROR_CODES.DATA_NOT_FOUND });
+    res.locals.userInfo = userData;
+    next();
+  });
 };
