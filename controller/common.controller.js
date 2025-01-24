@@ -50,4 +50,23 @@ class Controller {
   };
 }
 
+const createOrUpdateRegisteredUser = (userRecord) => {
+  return new Promise((resolve, reject) => {
+    if (!userRecord || !userRecord.uid) return reject({ message: 'Missing uid in userRecord!' });
+
+    const crud = new Crud(getDatabaseRefIprepSuperApp);
+    crud.getValueAsync(`${PATH_TO.users}/${userRecord.uid}`, (error, userData) => {
+      if (error) {
+        return reject({ message: 'Authorization denied while updating user data in the db' });
+      }
+      crud.updateValueAsync(`${PATH_TO.users}/${userRecord.uid}`, userRecord, async (error) => {
+        if (error) {
+          return reject({ message: 'Authorization denied while updating user data in the db' });
+        }
+        return resolve();
+      });
+    });
+  });
+};
+
 export default Controller;
