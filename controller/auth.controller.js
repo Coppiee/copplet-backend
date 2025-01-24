@@ -33,6 +33,7 @@ class Controller {
               this.loginWithEmail(req, res, referralCode);
             })
             .catch((e) => {
+              console.error(e);
               res.status(500).json({ status: 500, message: 'Failed to update', errorCode: ERROR_CODES.SERVER_ERROR });
             });
         });
