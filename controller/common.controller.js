@@ -50,22 +50,51 @@ class Controller {
   };
 }
 
-const createOrUpdateRegisteredUser = (userRecord) => {
-  return new Promise((resolve, reject) => {
-    if (!userRecord || !userRecord.uid) return reject({ message: 'Missing uid in userRecord!' });
+const referralCode = async (uid) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const path = PATH_TO.user_types;
+      if (!path) return reject({ status: 400, errorCode: ERROR_CODES['400'], msg: 'Bad Request' });
+      const userPath = PATH_TO.user_maps;
+      if (!userPath) return reject({ status: 400, errorCode: ERROR_CODES['400'], msg: 'Bad Request' });
+      const crud = new Crud(getDBRef);
+      let generateReferralCode;
+      const options = {
+        method: 'GET',
+        url: `${process.env.DATABASE_URL}/${userPath}/referral_code_user_relation.json?shallow=true`,
+        json: true,
+      };
+      const { body: referralCodeObj } = await httpRequest(options);
+      do {
+        generateReferralCode = generateAlphanumeric();
+      } while (referralCodeObj?.hasOwnProperty(generateReferralCode));
 
-    const crud = new Crud(getDatabaseRefIprepSuperApp);
-    crud.getValueAsync(`${PATH_TO.users}/${userRecord.uid}`, (error, userData) => {
-      if (error) {
-        return reject({ message: 'Authorization denied while updating user data in the db' });
+      const userReferralObj = {
+        referralCode: generateReferralCode,
+        timeOfCreation: +new Date(),
+        uid,
+      };
+      try {
+        crud.getValueAsync(`${userPath}/user_referral_code_relation/${uid}`, (error, data) => {
+          if (data) {
+            return reject('Referral Code already exists');
+          }
+          crud.setValueAsync(`${userPath}/referral_code_user_relation/${generateReferralCode}`, uid, (error) => {
+            crud.setValueAsync(`${userPath}/user_referral_code_relation/${uid}`, userReferralObj, (error) => {
+              return resolve({ status: 201, message: MESSAGE['201'], referralCode: generateReferralCode });
+            });
+          });
+        });
+      } catch (error) {
+        return reject({
+          status: 500,
+          message: MESSAGE['500'],
+          errorCode: ERROR_CODES['SERVER_ERROR'],
+        });
       }
-      crud.updateValueAsync(`${PATH_TO.users}/${userRecord.uid}`, userRecord, async (error) => {
-        if (error) {
-          return reject({ message: 'Authorization denied while updating user data in the db' });
-        }
-        return resolve();
-      });
-    });
+    } catch (error) {
+      return reject({ status: 500, message: MESSAGE['500'], errorCode: ERROR_CODES['SERVER_ERROR'] });
+    }
   });
 };
 

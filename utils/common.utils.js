@@ -322,6 +322,7 @@ const generateAlphanumeric = () => {
   return result;
 };
 
+<<<<<<< HEAD
 const referralCode = async (uid) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -374,6 +375,9 @@ const referralCode = async (uid) => {
 
 export {
   referralCode,
+=======
+export {
+>>>>>>> 886df06 (complete: ref code functionality)
   generateAlphanumeric,
   get_id_origin,
   httpRequest,
