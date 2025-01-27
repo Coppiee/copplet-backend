@@ -32,17 +32,15 @@ class Controller {
       const crud = new Crud(getDBRef);
       crud.getValueAsync(`${PATH_TO.users}/${uid}`, (error, userDoc) => {
         if (error) {
-          console.error('Error fetching user info:', error);
-          return res.status(500).json({ status: 500, message: 'Internal Server Error', errorCode: 'code/internal-server-error' });
+          return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR});
         }
         if (!userDoc) {
           return res.status(404).json({ status: 404, message: 'User not found', errorCode: 'user/not-found' });
         }
-        return res.status(200).json(userDoc);
+        return res.status(200).json({ status: 200, message: MESSAGE[200], data: userDoc });
       });
     } catch (error) {
-      console.error('Error fetching user info:', error);
-      return res.status(500).json({ status: 500, message: 'Internal Server Error', errorCode: 'code/internal-server-error' });
+      return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR});
     }
   };  
 }

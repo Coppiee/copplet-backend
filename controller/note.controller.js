@@ -39,10 +39,9 @@ class Controller {
 
                 return { ...note._doc, title: decryptedTitle, description: decryptedDescription };
             });
-            res.status(200).json(decryptedNotes);
+            res.status(200).json({ status: 200, message: MESSAGE[200], data: decryptedNotes });
         } catch (error) {
-            console.error("Error getting notes:", error);
-            res.status(400).json({ message: 'Error getting notes', error });
+            res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
         }
     };
 
