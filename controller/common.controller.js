@@ -11,10 +11,7 @@ class Controller {
   saveUser = async (req, res) => {
     const userData = req.body;
     const uid = res.locals.uid;
-    if (!uid){
-      return res.status(400).json({status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.BAD_REQUEST});
-    }
-    if (!Object.keys(userData).length)
+    if ((!Object.keys(userData).length) || (!uid))
       return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.BAD_REQUEST });
     const crud = new Crud(getDBRef);
     crud.updateValueAsync(`${PATH_TO.users}/${uid}`, userData, (error) => {
