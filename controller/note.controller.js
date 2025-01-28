@@ -1,3 +1,4 @@
+import { ERROR_CODES, MESSAGE } from "../global/global.vars.js";
 import Note from "../models/note.js";
 import { encrypt, decrypt, keys } from "../utils/encryption.js";
 
@@ -11,9 +12,9 @@ class Controller {
             const encryptedDescription = encrypt(description, key);
             const note = new Note({ ...req.body, title: encryptedTitle, description: encryptedDescription });
             await note.save();
-            res.status(201).json(note);
+            res.status(201).json({ status: 201, message: MESSAGE[201], data: note });
         } catch (error) {
-            res.status(400).json({ message: 'Error creating note', error });
+            res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
         }
     };
 
@@ -53,7 +54,7 @@ class Controller {
             const encryptedTitle = encrypt(title, key);
             const encryptedDescription = encrypt(description, key);
             const note = await Note.findByIdAndUpdate(req.params.noteId, { ...req.body, title: encryptedTitle, description: encryptedDescription }, { new: true });
-            res.status(200).json(note);
+            res.status(200).json({ status: 200, message: MESSAGE[200], data: note });
         } catch (error) {
             res.status(400).json({ message: 'Error Updating note', error });
         }
