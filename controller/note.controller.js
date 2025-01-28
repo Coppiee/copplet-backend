@@ -12,9 +12,9 @@ class Controller {
             const encryptedDescription = encrypt(description, key);
             const note = new Note({ ...req.body, title: encryptedTitle, description: encryptedDescription });
             await note.save();
-            res.status(201).json({ status: 201, message: MESSAGE[201], data: note });
+            return res.status(201).json({ status: 201, message: MESSAGE[201], data: note });
         } catch (error) {
-            res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
+            return res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
         }
     };
 
@@ -35,14 +35,14 @@ class Controller {
                         decryptedDescription = decrypt(note.description, key);
                     }
                 } catch (error) {
-                    console.error("Decryption error:", error);
+                    return res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
                 }
 
                 return { ...note._doc, title: decryptedTitle, description: decryptedDescription };
             });
-            res.status(200).json({ status: 200, message: MESSAGE[200], data: decryptedNotes });
+            return res.status(200).json({ status: 200, message: MESSAGE[200], data: decryptedNotes });
         } catch (error) {
-            res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
+            return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
         }
     };
 
@@ -54,18 +54,19 @@ class Controller {
             const encryptedTitle = encrypt(title, key);
             const encryptedDescription = encrypt(description, key);
             const note = await Note.findByIdAndUpdate(req.params.noteId, { ...req.body, title: encryptedTitle, description: encryptedDescription }, { new: true });
-            res.status(200).json({ status: 200, message: MESSAGE[200], data: note });
+            return res.status(200).json({ status: 200, message: MESSAGE[200], data: note });
         } catch (error) {
-            res.status(400).json({ message: 'Error Updating note', error });
+            return res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
         }
     };
 
     deleteNote = async (req, res) => {
         try {
             const note = await Note.findByIdAndDelete(req.params.noteId);
-            res.status(200).json({ message: "Note Deleted Successfully" });
+            return res.status(200).json({ status:200, message: MESSAGE[200] });
         } catch (error) {
-            res.status(400).json({ message: 'Error getting notes', error });
+            return res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
+
         }
     };
 }
