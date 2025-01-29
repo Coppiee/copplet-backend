@@ -170,6 +170,7 @@ class Crud {
       }
     });
   };
+
   deleteValueAsync = (path, next) => {
     try {
       this.db
@@ -186,6 +187,7 @@ class Crud {
       next(error);
     }
   };
+
   deleteValueSync = (path) => {
     return new Promise((resolve, reject) => {
       try {

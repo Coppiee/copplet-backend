@@ -7,6 +7,6 @@ const controller = new Controller();
 
 router.post('/saveUser', ensureAuthenticated, controller.saveUser);
 router.get('/userInfo', ensureAuthenticated, controller.fetchUserInfo);
-router.post('/connectedAccounts', ensureAuthenticated, fetchUserLocalInfo, controller.connectAccounts);
+router.post('/connectAccounts', ensureAuthenticated, fetchUserLocalInfo, controller.connectAccounts);
 
 export default router;
