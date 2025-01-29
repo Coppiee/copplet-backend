@@ -16,7 +16,7 @@ class Controller {
     const crud = new Crud(getDBRef);
     crud.updateValueAsync(`${PATH_TO.users}/${uid}`, userData, (error) => {
       if (error) return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
-      return res.status(200).json({ status: 200, message: MESSAGE[200], errorCode: ERROR_CODES.SUCCESS });
+      return res.status(200).json({ status: 200, message: MESSAGE[200]});
     });
   };
 
@@ -30,7 +30,7 @@ class Controller {
       crud.getValueAsync(`${PATH_TO.users}/${uid}`, (error, userDoc) => {
         if (error) return res.status(401).json({ status: 401, message: 'Unauthorized', errorCode: ERROR_CODES.UNAUTHORIZED });
         if (!userDoc) return res.status(404).json({ status: 404, message: 'User not found', errorCode: ERROR_CODES.DATA_NOT_FOUND });
-        return res.status(200).json({ status: 200, message: 'User data fetched successfully', errorCode: ERROR_CODES.SUCCESS, data: userDoc });
+        return res.status(200).json({ status: 200, message: 'User data fetched successfully', data: userDoc });
       });
     } catch (error) {
       console.error('Error fetching user info:', error);
