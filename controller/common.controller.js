@@ -6,6 +6,8 @@ import Auth from '../utils/auth.utils.js';
 import { getResponseObj, httpRequest, referralCode, sendMail } from '../utils/common.utils.js';
 import Crud from '../utils/crud.utils.js';
 import { getDBRef } from '../db/db.js';
+import { error } from 'console';
+import { stat } from 'fs';
 
 class Controller {
   saveUser = (req, res) => {
@@ -36,6 +38,18 @@ class Controller {
       console.error('Error fetching user info:', error);
       return res.status(500).json({ status: 500, message: 'Internal Server Error', errorCode: ERROR_CODES.SERVER_ERROR });
     }
+  };
+
+  listenToLocationChanges = (req, res) =>{
+    const uid = res.locals.uid;
+    const crud = new Crud(getDBRef);
+    crud.onValue(`${PATH_TO.users}/${uid}`, (error, data)=>{
+      if (error){
+        return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.BAD_REQUEST });
+      }else{
+        return res.status(200).json({ status: 200, message: MESSAGE[200], data: data });
+      }
+    });
   };
 }
 

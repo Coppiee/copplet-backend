@@ -2,7 +2,7 @@ import { app } from './app.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 
-const PORT = app.get('PORT') || 4000;
+const PORT = app.get('PORT');
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
