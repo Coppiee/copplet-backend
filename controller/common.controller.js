@@ -47,6 +47,8 @@ class Controller {
       if (error){
         return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.BAD_REQUEST });
       }else{
+        const { latitude, longitude} = data;
+        console.log(latitude, longitude);
         return res.status(200).json({ status: 200, message: MESSAGE[200], data: data });
       }
     });

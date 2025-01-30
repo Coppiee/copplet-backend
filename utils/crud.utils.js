@@ -247,16 +247,16 @@ class Crud {
     });
   };
 
-  onValue = (path, callback) =>{
+  onValue = (path, next) =>{
     try {
       this.db.child(path).on('value', (snapshot) =>{
         const data = snapshot.val();
-        callback(null, data);
+        next(null, data);
       }, (error) =>{
-        callback(error, null);
+        next(error, null);
       });
     } catch (error) {
-      callback(error, null);
+      next(error, null);
     }
   };
 }

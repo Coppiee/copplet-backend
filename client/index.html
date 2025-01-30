@@ -8,6 +8,8 @@
 <body>
   <h1>Socket.io Client</h1>
   <div id="status">Connecting...</div>
+  <div id="latitude"></div>
+  <div id="longitude"></div>
 
   <script src="/socket.io/socket.io.js"></script>
 
@@ -20,6 +22,12 @@
 
     socket.on('diconnect', ()=>{
         document.getElementById('status').innerText="Disconnected!";
+    });
+
+    socket.on('locationUpdate', (data) => {
+      console.log('Updated location from server:', data);
+      document.getElementById('latitude').innerText = "Latitude: " + data.latitude;
+      document.getElementById('longitude').innerText = "Longitude: " + data.longitude;
     });
 
     socket.emit('message', 'Hello Server');
