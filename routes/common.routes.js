@@ -7,6 +7,5 @@ const controller = new Controller();
 
 router.post('/saveUser', ensureAuthenticated, controller.saveUser);
 router.get('/userInfo', ensureAuthenticated, controller.fetchUserInfo);
-router.get('/location', ensureAuthenticated, controller.listenToLocationChanges);
 
 export default router;
