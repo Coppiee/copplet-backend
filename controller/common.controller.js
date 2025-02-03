@@ -1,13 +1,7 @@
-import { getUserAuth } from '../db/db.js';
-import { password_reset_template } from '../global/global.template.js';
 import { MESSAGE, ERROR_CODES } from '../global/global.vars.js';
 import { PATH_TO } from '../global/iprepapp.global.vars.js';
-import Auth from '../utils/auth.utils.js';
-import { getResponseObj, httpRequest, referralCode, sendMail } from '../utils/common.utils.js';
 import Crud from '../utils/crud.utils.js';
 import { getDBRef } from '../db/db.js';
-import { error } from 'console';
-import { stat } from 'fs';
 
 class Controller {
   saveUser = (req, res) => {

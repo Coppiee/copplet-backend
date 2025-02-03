@@ -14,9 +14,9 @@ const io = new Server(httpServer, {
   }
 });
 
-const auth = new Auth(getUserAuth); // Create an instance of the Auth class
 
 io.on('connection', (socket) => {
+  const auth = new Auth(getUserAuth); 
   console.log('New client connected');
 
   socket.on('message', (message) => {
