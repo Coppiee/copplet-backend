@@ -7,6 +7,13 @@ import { ERROR_CODES, MESSAGE } from './global/global.vars.js';
 import commonRoutes from './routes/common.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import noteRoutes from './routes/note.routes.js';
+
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 initializeFirebaseApp();
 initMongoDb();
 
@@ -21,8 +28,12 @@ app.use('/api', noteRoutes);
 app.use('/api', commonRoutes);
 app.use('/api', authRoutes);
 
+
+app.use(express.static(path.join(__dirname, 'client')));
+
 app.get('/', (req, res) => {
-  res.redirect('/api/');
+  // res.redirect('/api/');
+  res.sendFile('client/index.html');
 });
 
 app.all('*', (req, res) => {

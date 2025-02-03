@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.io Client</title>
+</head>
+<body>
+  <h1>Socket.io Client</h1>
+  <div id="status">Connecting...</div>
+  <div id="latitude"></div>
+  <div id="longitude"></div>
+  <input type="text" id="token">
+  <button onclick="createConnection()">Connect</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script>
+    const socket = io();
+
+    function createConnection(){
+      const token = document.getElementById("token").value;
+      socket.emit('token', token);
+    }
+
+    socket.on('connect', () => {
+      document.getElementById('status').innerText = "Connected!";
+    });
+
+    socket.on('disconnect', () => {
+      document.getElementById('status').innerText = "Disconnected!";
+    });
+
+    socket.on('locationUpdate', (data) => {
+      document.getElementById('latitude').innerText = "Latitude: " + data.latitude;
+      document.getElementById('longitude').innerText = "Longitude: " + data.longitude;
+    });
+
+    socket.emit('message', 'Hello Server');
+  </script>
+</body>
+</html>

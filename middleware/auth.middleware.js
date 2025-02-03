@@ -2,6 +2,7 @@ import Auth from '../utils/auth.utils.js';
 import { getResponseObj } from '../utils/common.utils.js';
 import { ERROR_CODES } from '../global/global.vars.js';
 import { getUserAuth } from '../db/db.js';
+import { keys } from '../utils/encryption.js';
 
 export const ensureAuthenticated = (req, res, next) => {
   const apiKey = req.header('X-API-Key');
@@ -39,4 +40,19 @@ export const ensureAuthenticated = (req, res, next) => {
       const resObj = getResponseObj(error);
       return res.status(resObj.status || 500).json(resObj);
     });
+};
+
+export const checkKeys = (req, res, next) => {
+  try {
+      if (!keys.sharedKey) {
+          throw new Error('Shared key does not exist');
+      }
+      if (!keys.privateKey) {
+          throw new Error('Private key does not exist');
+      }
+      next();
+  } catch (error) {
+      console.error("Key validation error:", error);
+      res.status(500).json({ status: 500, message: error.message});
+  }
 };

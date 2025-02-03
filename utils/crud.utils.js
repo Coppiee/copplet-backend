@@ -246,6 +246,19 @@ class Crud {
       }
     });
   };
+
+  onValue = (path, next) =>{
+    try {
+      this.db.child(path).on('value', (snapshot) =>{
+        const data = snapshot.val();
+        next(null, data);
+      }, (error) =>{
+        next(error, null);
+      });
+    } catch (error) {
+      next(error, null);
+    }
+  };
 }
 
 export default Crud;
