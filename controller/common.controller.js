@@ -6,13 +6,14 @@ import Auth from '../utils/auth.utils.js';
 import { getResponseObj, httpRequest, referralCode, sendMail } from '../utils/common.utils.js';
 import Crud from '../utils/crud.utils.js';
 import { getDBRef } from '../db/db.js';
+import { error } from 'node:console';
 
 class Controller {
   saveUser = (req, res) => {
     const userData = req.body;
     const uid = res.locals.uid;
     if (!uid || !Object.keys(userData).length)
-      return res.status(400).json({ status: 400, message: 'Either user id or user data is required', errorCode: ERROR_CODES.BAD_REQUEST });
+      return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.BAD_REQUEST });
     const crud = new Crud(getDBRef);
     crud.updateValueAsync(`${PATH_TO.users}/${uid}`, userData, (error) => {
       if (error) return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
@@ -28,14 +29,62 @@ class Controller {
     try {
       const crud = new Crud(getDBRef);
       crud.getValueAsync(`${PATH_TO.users}/${uid}`, (error, userDoc) => {
-        if (error) return res.status(401).json({ status: 401, message: 'Unauthorized', errorCode: ERROR_CODES.UNAUTHORIZED });
-        if (!userDoc) return res.status(404).json({ status: 404, message: 'User not found', errorCode: ERROR_CODES.DATA_NOT_FOUND });
-        return res.status(200).json({ status: 200, message: 'User data fetched successfully', errorCode: ERROR_CODES.SUCCESS, data: userDoc });
+        if (error) return res.status(401).json({ status: 401, message: MESSAGE[401], errorCode: ERROR_CODES.UNAUTHORIZED });
+        if (!userDoc) return res.status(404).json({ status: 404, message: MESSAGE[404], errorCode: ERROR_CODES.DATA_NOT_FOUND });
+        return res.status(200).json({ status: 200, message: MESSAGE[200], data: userDoc });
       });
     } catch (error) {
-      console.error('Error fetching user info:', error);
-      return res.status(500).json({ status: 500, message: 'Internal Server Error', errorCode: ERROR_CODES.SERVER_ERROR });
+      return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
     }
+  };
+
+  setUserMood = (req, res) =>{
+    const {mood, description} = req.body;
+    const uid = res.locals.uid;
+    if (!uid) {
+      return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.BAD_REQUEST });
+    }
+    if (!mood) {
+      return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.MISSING_PARAMS});
+    }
+    const userMoodData = {
+      mood, description: description || ''
+    };
+    const crud = new Crud(getDBRef);
+    crud.updateValueAsync(`${PATH_TO.users}/${uid}`, userMoodData, (error)=>{
+      if(error) return res.status(500).json({status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR});
+      return res.status(200).json({ status: 200, message: MESSAGE[200]});
+    });
+  };
+
+  getUserMood = (req, res) =>{
+    const uid = res.locals.uid;
+    if (!uid){
+      return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.BAD_REQUEST });
+    }
+    try {
+      const crud = new Crud(getDBRef);
+      crud.getValueAsync(`${PATH_TO.users}/${uid}`, (error, userMood) =>{
+        if (error) return res.status(401).json({status: 401, message: MESSAGE[401], errorCode: ERROR_CODES.UNAUTHORIZED});
+        if (!userMood) return res.status(404).json({status: 404, message: MESSAGE[404], errorCode: ERROR_CODES.DATA_NOT_FOUND});
+        const { mood, description } = userMood;
+        return res.status(200).json({status: 200, message: MESSAGE[200], data: { mood, description }});
+      });
+    } catch (error) {
+      return res.status(500).json({status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR});
+    }
+  };
+
+  setPredefinedMoods = (req, res) => {
+    const predefinedMoods = ['Happy', 'Sad', 'Stressed', 'Excited'];
+
+    const crud = new Crud(getDBRef);
+    crud.setValueAsync('/static_maps/moods', predefinedMoods, (error) => {
+      if (error) {
+        return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
+      }
+      return res.status(200).json({ status: 200, message: MESSAGE[200] });
+    });
   };
 }
 
