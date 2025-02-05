@@ -41,34 +41,30 @@ class Controller {
   setUserMood = (req, res) =>{
     const {mood, description} = req.body;
     const uid = res.locals.uid;
-    if (!uid) {
+    if (!uid || !mood) {
       return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.BAD_REQUEST });
-    }
-    if (!mood) {
-      return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.MISSING_PARAMS});
     }
     const userMoodData = {
       mood, description: description || ''
     };
     const crud = new Crud(getDBRef);
-    crud.updateValueAsync(`${PATH_TO.users}/${uid}`, userMoodData, (error)=>{
-      if(error) return res.status(500).json({status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR});
+    crud.updateValueAsync(`${PATH_TO.users}/${uid}/mood`, userMoodData, (error)=>{
+      if(error) return res.status(401).json({status: 401, message: MESSAGE[401], errorCode: ERROR_CODES.UNAUTHORIZED});
       return res.status(200).json({ status: 200, message: MESSAGE[200]});
     });
   };
 
   getUserMood = (req, res) =>{
-    const uid = res.locals.uid;
-    if (!uid){
-      return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.BAD_REQUEST });
-    }
     try {
+      const uid = res.locals.uid;
+      if (!uid){
+        return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.BAD_REQUEST });
+      }
       const crud = new Crud(getDBRef);
-      crud.getValueAsync(`${PATH_TO.users}/${uid}`, (error, userMood) =>{
+      crud.getValueAsync(`${PATH_TO.users}/${uid}/mood`, (error, userMood) =>{
         if (error) return res.status(401).json({status: 401, message: MESSAGE[401], errorCode: ERROR_CODES.UNAUTHORIZED});
         if (!userMood) return res.status(404).json({status: 404, message: MESSAGE[404], errorCode: ERROR_CODES.DATA_NOT_FOUND});
-        const { mood, description } = userMood;
-        return res.status(200).json({status: 200, message: MESSAGE[200], data: { mood, description }});
+        return res.status(200).json({status: 200, message: MESSAGE[200], data: userMood});
       });
     } catch (error) {
       return res.status(500).json({status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR});
@@ -80,6 +76,22 @@ class Controller {
 
     const crud = new Crud(getDBRef);
     crud.setValueAsync('/static_maps/moods', predefinedMoods, (error) => {
+      if (error) {
+        return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
+      }
+      return res.status(200).json({ status: 200, message: MESSAGE[200] });
+    });
+  };
+
+  updateOnPath = (req, res) => {
+    const { moods } = req.body;
+
+    if (moods.length == 0) {
+      return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.BAD_REQUEST });
+    }
+
+    const crud = new Crud(getDBRef);
+    crud.setValueAsync('/static_maps/moods', moods, (error) => {
       if (error) {
         return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
       }
