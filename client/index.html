@@ -16,27 +16,31 @@
   <script src="/socket.io/socket.io.js"></script>
 
   <script>
-    const socket = io();
-
     function createConnection(){
       const token = document.getElementById("token").value;
-      socket.emit('token', token);
+      const socket = io({
+        auth: { token }
+      });
+
+      socket.on('connect', () => {
+        document.getElementById('status').innerText = "Connected!";
+      });
+
+      socket.on('disconnect', () => {
+        document.getElementById('status').innerText = "Disconnected!";
+      });
+
+      socket.on('locationUpdate', (data) => {
+        document.getElementById('latitude').innerText = "Latitude: " + data.latitude;
+        document.getElementById('longitude').innerText = "Longitude: " + data.longitude;
+      });
+
+      socket.on('connect_error', (error) => {
+        document.getElementById('status').innerText = "Error: " + error.message;
+      });
+
+      socket.emit('message', 'Hello Server');
     }
-
-    socket.on('connect', () => {
-      document.getElementById('status').innerText = "Connected!";
-    });
-
-    socket.on('disconnect', () => {
-      document.getElementById('status').innerText = "Disconnected!";
-    });
-
-    socket.on('locationUpdate', (data) => {
-      document.getElementById('latitude').innerText = "Latitude: " + data.latitude;
-      document.getElementById('longitude').innerText = "Longitude: " + data.longitude;
-    });
-
-    socket.emit('message', 'Hello Server');
   </script>
 </body>
 </html>
