@@ -71,18 +71,6 @@ class Controller {
     }
   };
 
-  setPredefinedMoods = (req, res) => {
-    const predefinedMoods = ['Happy', 'Sad', 'Stressed', 'Excited'];
-
-    const crud = new Crud(getDBRef);
-    crud.setValueAsync('/static_maps/moods', predefinedMoods, (error) => {
-      if (error) {
-        return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
-      }
-      return res.status(200).json({ status: 200, message: MESSAGE[200] });
-    });
-  };
-
   updateOnPath = (req, res) => {
     const { moods } = req.body;
 
@@ -96,6 +84,16 @@ class Controller {
         return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
       }
       return res.status(200).json({ status: 200, message: MESSAGE[200] });
+    });
+  };
+
+  getOnPath = (req, res) =>{
+    const crud = new Crud(getDBRef);
+    crud.getValueAsync('/static_maps/moods', (error, moods) =>{
+      if (error){
+        return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
+      }
+      return res.status(200).json({ status: 200, message: MESSAGE[200], data: moods});
     });
   };
 }
