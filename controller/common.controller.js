@@ -38,19 +38,34 @@ class Controller {
     }
   };
 
-  setUserMood = (req, res) =>{
-    const {mood, description} = req.body;
+  setUserMood = (req, res) => {
+    const { mood, description } = req.body;
     const uid = res.locals.uid;
+    const timestamp = Date.now();
+
     if (!uid || !mood) {
       return res.status(400).json({ status: 400, message: MESSAGE[400], errorCode: ERROR_CODES.BAD_REQUEST });
     }
     const userMoodData = {
-      mood, description: description || ''
+      mood,
+      description: description || ''
     };
+    const moodHistoryData = {
+      ...userMoodData,
+      timestamp
+    };
+
     const crud = new Crud(getDBRef);
-    crud.updateValueAsync(`${PATH_TO.users}/${uid}/mood`, userMoodData, (error)=>{
-      if(error) return res.status(401).json({status: 401, message: MESSAGE[401], errorCode: ERROR_CODES.UNAUTHORIZED});
-      return res.status(200).json({ status: 200, message: MESSAGE[200]});
+    crud.updateValueAsync(`${PATH_TO.users}/${uid}/mood`, userMoodData, (error) => {
+      if (error) {
+        return res.status(401).json({ status: 401, message: MESSAGE[401], errorCode: ERROR_CODES.UNAUTHORIZED });
+      }
+      crud.setValueAsync(`mood_history/${uid}/${timestamp}`, moodHistoryData, (error) => {
+        if (error) {
+          return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
+        }
+        return res.status(200).json({ status: 200, message: MESSAGE[200] });
+      });
     });
   };
 
