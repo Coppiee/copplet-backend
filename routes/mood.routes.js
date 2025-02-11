@@ -8,5 +8,6 @@ router.post('/setMood', ensureAuthenticated, controller.setUserMood);
 router.get('/getMood', ensureAuthenticated, controller.getUserMood);
 router.post('/updateOnPath', controller.updateOnPath);
 router.get('/getOnPath', controller.getOnPath);
+router.get('/moodPercentage', ensureAuthenticated, controller.calculateMoodPercentages);
 
 export default router;
