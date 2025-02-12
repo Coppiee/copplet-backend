@@ -7,6 +7,7 @@ import { ERROR_CODES, MESSAGE } from './global/global.vars.js';
 import commonRoutes from './routes/common.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import noteRoutes from './routes/note.routes.js';
+import moodRoutes from './routes/mood.routes.js';
 initializeFirebaseApp();
 initMongoDb();
 
@@ -18,6 +19,7 @@ app.use(express.json({ limit: '100mb', extended: true }));
 
 app.set('PORT', process.argv[3] || process.env.PORT);
 app.use('/api', noteRoutes);
+app.use('/api', moodRoutes);
 app.use('/api', commonRoutes);
 app.use('/api', authRoutes);
 
