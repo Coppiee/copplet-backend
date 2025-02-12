@@ -37,6 +37,17 @@ class Controller {
       return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
     }
   };
+
+  connectAccounts = (req, res) => {
+    const uid = res.locals.uid;
+    const userInfo = res.locals.userInfo;
+    if (!uid) return res.status(400).json({ status: 400, message: 'Uid not found', errorCode: ERROR_CODES.BAD_REQUEST });
+    const { connectionCode } = req.body;
+    const crud = new Crud(getDBRef);
+    crud.updateValueAsync(`${PATH_TO.connection}/${uid}`, connectionCode, (error) => {
+      if (error) return res.status(401).json({ status: 401, message: 'Unauthorized', errorCode: ERROR_CODES.UNAUTHORIZED });
+    });
+  };
 }
 
 export default Controller;

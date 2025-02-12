@@ -208,9 +208,9 @@ const set_ip_user_cookie = (ip_user, res) => {
         expires: expiryDate,
       });
     }
-    console.log('Cookies set');
+    console.info('Cookies set');
   } catch (error) {
-    console.log('Cookies set error: ', error);
+    console.error('Cookies set error: ', error);
   }
 };
 
@@ -353,7 +353,9 @@ const referralCode = async (uid) => {
           }
           crud.setValueAsync(`${userPath}/referral_code_user_relation/${generateReferralCode}`, uid, (error) => {
             crud.setValueAsync(`${userPath}/user_referral_code_relation/${uid}`, userReferralObj, (error) => {
-              return resolve({ status: 201, message: MESSAGE['201'], referralCode: generateReferralCode });
+              crud.setValueAsync(`${PATH_TO.users}/${uid}/referral_code`, generateReferralCode, (error) => {
+                return resolve({ status: 201, message: MESSAGE['201'], referralCode: generateReferralCode });
+              });
             });
           });
         });
