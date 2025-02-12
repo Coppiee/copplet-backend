@@ -6,7 +6,6 @@ import initMongoDb from './db/mongoose.js';
 import { ERROR_CODES, MESSAGE } from './global/global.vars.js';
 import commonRoutes from './routes/common.routes.js';
 import authRoutes from './routes/auth.routes.js';
-import noteRoutes from './routes/note.routes.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
