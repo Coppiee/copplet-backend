@@ -7,6 +7,7 @@ if (process.env.NODE_ENV == 'development') {
 
 export const PATH_TO = {
   users: '/userMaps/users',
-  userMaps: '/userMaps',
+  user_maps: '/userMaps',
   connection: '/accountConnections',
+  coupleCodeUserRelation: 'userMaps/coupleCodeUserRelation',
 };

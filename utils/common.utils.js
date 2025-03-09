@@ -311,7 +311,7 @@ const generateCoupleCode = async (uid) => {
 
       const userReferralObj = {
         coupleCode: generateCoupleCode,
-        timeOfCreation: +new Date(),
+        timestamp: +new Date(),
         uid,
       };
       try {
