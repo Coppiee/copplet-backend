@@ -3,7 +3,7 @@ import { password_reset_template } from '../global/global.template.js';
 import { MESSAGE, ERROR_CODES } from '../global/global.vars.js';
 import { PATH_TO } from '../global/iprepapp.global.vars.js';
 import Auth from '../utils/auth.utils.js';
-import { getResponseObj, httpRequest, referralCode, sendMail } from '../utils/common.utils.js';
+import { getResponseObj, httpRequest, generateCoupleCode, sendMail } from '../utils/common.utils.js';
 import Crud from '../utils/crud.utils.js';
 import { getDBRef } from '../db/db.js';
 
@@ -28,11 +28,12 @@ class Controller {
         const userData = { emailVerified: true, name, email };
         crud.updateValueAsync(`${PATH_TO.users}/${userRecord.uid}`, userData, (error) => {
           if (error) return res.status(500).json({ status: 500, message: 'Failed to update', errorCode: ERROR_CODES.SERVER_ERROR });
-          referralCode(userRecord.uid)
-            .then(({ referralCode }) => {
-              this.loginWithEmail(req, res, referralCode);
+          generateCoupleCode(userRecord.uid)
+            .then(({ coupleCode }) => {
+              this.loginWithEmail(req, res, coupleCode);
             })
             .catch((e) => {
+              console.error(e);
               res.status(500).json({ status: 500, message: 'Failed to update', errorCode: ERROR_CODES.SERVER_ERROR });
             });
         });
@@ -46,7 +47,7 @@ class Controller {
       });
   };
 
-  loginWithEmail = async (req, res, referralCode) => {
+  loginWithEmail = async (req, res, coupleCode) => {
     try {
       // email, password, platformType, app_language and fcmToken are available in the req.body
       const email = req.body.email || res.locals.email;
@@ -81,7 +82,7 @@ class Controller {
           .getUserByToken(token)
           .then((decodeToken) => {
             const emailVerified = decodeToken.email_verified;
-            const response_obj = { token, emailVerified, refreshToken, referralCode };
+            const response_obj = { token, emailVerified, refreshToken, coupleCode };
             return res.json({ status: 200, message: 'User logged in', data: response_obj });
           })
           .catch((error) => {

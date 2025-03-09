@@ -34,7 +34,7 @@ class Crud {
             return resolve({ error });
           });
       } catch (error) {
-        console.log('getValueSync: ', path, error);
+        console.error('getValueSync: ', path, error);
         return reject(error);
       }
     });
@@ -53,7 +53,7 @@ class Crud {
           next(error);
         });
     } catch (error) {
-      console.log('getValueAsync: ', path, error);
+      console.error('getValueAsync: ', path, error);
       next(error);
     }
   };
@@ -73,7 +73,7 @@ class Crud {
           next(error);
         });
     } catch (error) {
-      console.log('getChunksAsync: ', path, error);
+      console.error('getChunksAsync: ', path, error);
       next(error);
     }
   };
@@ -112,7 +112,7 @@ class Crud {
             return reject(error);
           });
       } catch (error) {
-        console.log('setValueSync: ', path, error);
+        console.error('setValueSync: ', path, error);
         return reject(error);
       }
     });
@@ -130,7 +130,7 @@ class Crud {
           next(error);
         });
     } catch (error) {
-      console.log('setValueAsync: ', path, error);
+      console.error('setValueAsync: ', path, error);
       next(error);
     }
   };
@@ -147,7 +147,7 @@ class Crud {
           next(error);
         });
     } catch (error) {
-      console.log('updateValueAsync: ', path, error);
+      console.error('updateValueAsync: ', path, error);
       next(error);
     }
   };
@@ -165,11 +165,12 @@ class Crud {
             reject(error);
           });
       } catch (error) {
-        console.log('updateValueSync: ', path, error);
+        console.error('updateValueSync: ', path, error);
         reject(error);
       }
     });
   };
+
   deleteValueAsync = (path, next) => {
     try {
       this.db
@@ -182,10 +183,11 @@ class Crud {
           next(error);
         });
     } catch (error) {
-      console.log('deleteValueAsync: ', path, error);
+      console.error('deleteValueAsync: ', path, error);
       next(error);
     }
   };
+
   deleteValueSync = (path) => {
     return new Promise((resolve, reject) => {
       try {
@@ -199,7 +201,7 @@ class Crud {
             reject(error);
           });
       } catch (error) {
-        console.log('deleteValueSync: ', path, error);
+        console.error('deleteValueSync: ', path, error);
         reject(error);
       }
     });
@@ -218,7 +220,7 @@ class Crud {
           next({ error: e });
         });
     } catch (error) {
-      console.log('push: ', path, error);
+      console.error('push: ', path, error);
       next({ error: error });
     }
   };
