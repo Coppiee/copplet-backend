@@ -283,36 +283,6 @@ const decrypt = (encryptedData, password, ivStr, algorithm) => {
   return decrypted.toString();
 };
 
-const saveReportsDeviceFormat = (uid, raw_usage) => {
-  try {
-    const board = raw_usage?.board_id;
-    const lang = raw_usage?.language_id;
-    const cls = raw_usage?.class_id;
-
-    const boardLangClsKey = `${board}_75S_${lang}_75S_${cls}`;
-
-    const crud = new Crud(getDBRef);
-    const currentDate = +new Date(new Date(Date.now()).toDateString());
-
-    crud.getValueAsync(`${PATH_TO.reports}/deviceFormat/${uid}/${boardLangClsKey}`, (error, currentReport) => {
-      if (error) console.log(error);
-      const category_wise_subject_wise_time_spent = categoryWiseSubjectWiseTime(
-        currentReport?.category_wise_subject_wise_time_spent,
-        raw_usage,
-        currentDate
-      );
-
-      const category_wise_subject_wise_usage = categoryWiseSubjectWiseUsage(currentReport?.category_wise_subject_wise_usage, raw_usage, currentDate);
-
-      if (!currentReport) currentReport = { category_wise_subject_wise_time_spent, category_wise_subject_wise_usage };
-
-      crud.updateValueAsync(`${PATH_TO.reports}/deviceFormat/${uid}/${boardLangClsKey}`, currentReport, (error) => {});
-    });
-  } catch (error) {
-    return { error: error.message };
-  }
-};
-
 const generateAlphanumeric = () => {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
@@ -322,39 +292,37 @@ const generateAlphanumeric = () => {
   return result;
 };
 
-const referralCode = async (uid) => {
+const generateCoupleCode = async (uid) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const path = PATH_TO.user_types;
-      if (!path) return reject({ status: 400, errorCode: ERROR_CODES['400'], msg: 'Bad Request' });
       const userPath = PATH_TO.user_maps;
       if (!userPath) return reject({ status: 400, errorCode: ERROR_CODES['400'], msg: 'Bad Request' });
       const crud = new Crud(getDBRef);
-      let generateReferralCode;
+      let generateCoupleCode;
       const options = {
         method: 'GET',
-        url: `${process.env.DATABASE_URL}/${userPath}/referral_code_user_relation.json?shallow=true`,
+        url: `${process.env.DATABASE_URL}/${userPath}/coupleCodeUserRelation.json?shallow=true`,
         json: true,
       };
-      const { body: referralCodeObj } = await httpRequest(options);
+      const { body: coupleCodeObj } = await httpRequest(options);
       do {
-        generateReferralCode = generateAlphanumeric();
-      } while (referralCodeObj?.hasOwnProperty(generateReferralCode));
+        generateCoupleCode = generateAlphanumeric();
+      } while (coupleCodeObj?.hasOwnProperty(generateCoupleCode));
 
       const userReferralObj = {
-        referralCode: generateReferralCode,
+        coupleCode: generateCoupleCode,
         timeOfCreation: +new Date(),
         uid,
       };
       try {
-        crud.getValueAsync(`${userPath}/user_referral_code_relation/${uid}`, (error, data) => {
+        crud.getValueAsync(`${userPath}/userCoupleCodeRelation/${uid}`, (error, data) => {
           if (data) {
-            return reject('Referral Code already exists');
+            return reject('Couple Code already exists');
           }
-          crud.setValueAsync(`${userPath}/referral_code_user_relation/${generateReferralCode}`, uid, (error) => {
-            crud.setValueAsync(`${userPath}/user_referral_code_relation/${uid}`, userReferralObj, (error) => {
-              crud.setValueAsync(`${PATH_TO.users}/${uid}/referral_code`, generateReferralCode, (error) => {
-                return resolve({ status: 201, message: MESSAGE['201'], referralCode: generateReferralCode });
+          crud.setValueAsync(`${userPath}/coupleCodeUserRelation/${generateCoupleCode}`, uid, (error) => {
+            crud.setValueAsync(`${userPath}/userCoupleCodeRelation/${uid}`, userReferralObj, (error) => {
+              crud.setValueAsync(`${PATH_TO.users}/${uid}/coupleCode`, generateCoupleCode, (error) => {
+                return resolve({ status: 201, message: MESSAGE['201'], coupleCode: generateCoupleCode });
               });
             });
           });
@@ -373,7 +341,7 @@ const referralCode = async (uid) => {
 };
 
 export {
-  referralCode,
+  generateCoupleCode,
   generateAlphanumeric,
   get_id_origin,
   httpRequest,
@@ -389,7 +357,6 @@ export {
   sortObjectWithKey,
   generateRandomString,
   encrypt,
-  saveReportsDeviceFormat,
 };
 
 const categoryWiseSubjectWiseTime = (

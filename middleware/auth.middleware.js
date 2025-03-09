@@ -7,12 +7,6 @@ import Crud from '../utils/crud.utils.js';
 import { keys } from '../utils/encryption.js';
 
 export const ensureAuthenticated = (req, res, next) => {
-  //const apiKey = req.header('X-API-Key');
-  //if (apiKey) {
-  //  return apiKey === process.env.API_KEY
-  //    ? next()
-  //    : res.status(400).json({ status: 400, message: 'Bad request', errorCode: ERROR_CODES.BAD_REQUEST });
-  //}
   if (!req.header('Authorization')) return res.status(400).json({ status: 400, message: 'Bad request', errorCode: ERROR_CODES.BAD_REQUEST });
   const token = req.header('Authorization').split(' ')[1];
   const auth = new Auth(getUserAuth);
