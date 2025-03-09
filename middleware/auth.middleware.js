@@ -4,6 +4,7 @@ import { ERROR_CODES } from '../global/global.vars.js';
 import { getDBRef, getUserAuth } from '../db/db.js';
 import { PATH_TO } from '../global/iprepapp.global.vars.js';
 import Crud from '../utils/crud.utils.js';
+import { keys } from '../utils/encryption.js';
 
 export const ensureAuthenticated = (req, res, next) => {
   //const apiKey = req.header('X-API-Key');
@@ -53,4 +54,19 @@ export const fetchUserLocalInfo = (req, res, next) => {
     res.locals.userInfo = userData;
     next();
   });
+};
+
+export const checkKeys = (req, res, next) => {
+  try {
+    if (!keys.sharedKey) {
+      throw new Error('Shared key does not exist');
+    }
+    if (!keys.privateKey) {
+      throw new Error('Private key does not exist');
+    }
+    next();
+  } catch (error) {
+    console.error('Key validation error:', error);
+    res.status(500).json({ status: 500, message: error.message });
+  }
 };

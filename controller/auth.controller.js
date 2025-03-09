@@ -83,7 +83,6 @@ class Controller {
           .then((decodeToken) => {
             const emailVerified = decodeToken.email_verified;
             const response_obj = { token, emailVerified, refreshToken, referralCode };
-
             return res.json({ status: 200, message: 'User logged in', data: response_obj });
           })
           .catch((error) => {
