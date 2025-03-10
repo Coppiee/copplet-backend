@@ -40,18 +40,25 @@ class Controller {
       if (!partnerCode) return res.status(400).json({ status: 400, message: 'Partner code is required', errorCode: ERROR_CODES.BAD_REQUEST });
       const uid = res?.locals?.uid;
       if (!uid) return res.status(400).json({ status: 400, message: 'Uid not found', errorCode: ERROR_CODES.BAD_REQUEST });
-      const { coupleCode, userName } = res?.locals?.userInfo;
+      const { coupleCode, name: userName } = res?.locals?.userInfo;
+      if (coupleCode == partnerCode)
+        return res.status(400).json({ status: 400, message: 'You cannot connect to yourself', errorCode: ERROR_CODES.BAD_REQUEST });
       const crud = new Crud(getDBRef);
-      const { data: partnerUid } = await crud.getValueSync(`${PATH_TO.coupleCodeUserRelation}/${partnerCode}`);
-      if (!partnerUid) return res.status(400).json({ status: 400, message: 'Partner code not found', errorCode: ERROR_CODES.BAD_REQUEST });
+      const { data: coupleCodeData } = await crud.getValueSync(`${PATH_TO.coupleCodeUserRelation}/${partnerCode}`);
+      if (!coupleCodeData) return res.status(400).json({ status: 400, message: 'Partner code not found', errorCode: ERROR_CODES.BAD_REQUEST });
+      const partnerUid = coupleCodeData?.uid;
+      const isCoupleCodeConnected = coupleCodeData?.connected;
+      if (isCoupleCodeConnected)
+        return res.status(400).json({ status: 400, message: 'Partner code already connected', errorCode: ERROR_CODES.BAD_REQUEST });
       const { data: partnerData } = await crud.getValueSync(`${PATH_TO.users}/${partnerUid}`);
-
-      const connectionCode = `${coupleCode}_${partnerCode}`;
+      if (!partnerData) return res.status(400).json({ status: 400, message: 'Partner data not found', errorCode: ERROR_CODES.BAD_REQUEST });
+      const currentTime = +new Date();
+      const connectionCode = `${coupleCode}${partnerCode}`;
       const connectionData = {
-        timestamp: +new Date(),
+        timestamp: currentTime,
         connectionCode,
-        users: {
-          [partnerUid]: { connectionCode, userName: partnerData?.userName || partnerData?.name, coupleCode: partnerData?.coupleCode },
+        connectedUsers: {
+          [partnerUid]: { connectionCode, userName: partnerData?.name, coupleCode: partnerData?.coupleCode },
           [uid]: { connectionCode, userName, coupleCode },
         },
       };
@@ -60,9 +67,15 @@ class Controller {
       promises.push(crud.updateValueSync(`${PATH_TO.connection}/${connectionCode}`, connectionData));
       promises.push(crud.updateValueSync(`${PATH_TO.users}/${partnerUid}/`, { connectionCode }));
       promises.push(crud.updateValueSync(`${PATH_TO.users}/${uid}`, { connectionCode }));
+      promises.push(
+        crud.updateValueSync(`${PATH_TO.coupleCodeUserRelation}/${partnerCode}`, { connected: true, connectedUid: uid, timestamp: currentTime })
+      );
+      promises.push(
+        crud.updateValueSync(`${PATH_TO.coupleCodeUserRelation}/${coupleCode}`, { connected: true, connectedUid: partnerUid, timestamp: currentTime })
+      );
 
       await Promise.all(promises);
-      return res.status(200).json({ status: 200, message: 'Connection code updated successfully', data: { connectionCode } });
+      return res.status(200).json({ status: 200, message: 'Connection code updated successfully', data: { connectionData } });
     } catch (error) {
       console.error('Error connecting accounts:', error);
       return res.status(500).json({ status: 500, message: 'Internal Server Error', errorCode: ERROR_CODES.SERVER_ERROR });
