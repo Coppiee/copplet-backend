@@ -319,7 +319,7 @@ const generateCoupleCode = async (uid) => {
           if (data) {
             return reject('Couple Code already exists');
           }
-          crud.setValueAsync(`${userPath}/coupleCodeUserRelation/${generateCoupleCode}`, uid, (error) => {
+          crud.setValueAsync(`${userPath}/coupleCodeUserRelation/${generateCoupleCode}`, { connected: false, uid }, (error) => {
             crud.setValueAsync(`${userPath}/userCoupleCodeRelation/${uid}`, userReferralObj, (error) => {
               crud.setValueAsync(`${PATH_TO.users}/${uid}/coupleCode`, generateCoupleCode, (error) => {
                 return resolve({ status: 201, message: MESSAGE['201'], coupleCode: generateCoupleCode });
