@@ -40,15 +40,24 @@ class Controller {
       if (!partnerCode) return res.status(400).json({ status: 400, message: 'Partner code is required', errorCode: ERROR_CODES.BAD_REQUEST });
       const uid = res?.locals?.uid;
       if (!uid) return res.status(400).json({ status: 400, message: 'Uid not found', errorCode: ERROR_CODES.BAD_REQUEST });
-      const { coupleCode } = res?.locals?.userInfo;
+      const { coupleCode, userName } = res?.locals?.userInfo;
       const crud = new Crud(getDBRef);
       const { data: partnerUid } = await crud.getValueSync(`${PATH_TO.coupleCodeUserRelation}/${partnerCode}`);
       if (!partnerUid) return res.status(400).json({ status: 400, message: 'Partner code not found', errorCode: ERROR_CODES.BAD_REQUEST });
+      const { data: partnerData } = await crud.getValueSync(`${PATH_TO.users}/${partnerUid}`);
+
       const connectionCode = `${coupleCode}_${partnerCode}`;
+      const connectionData = {
+        timestamp: +new Date(),
+        connectionCode,
+        users: {
+          [partnerUid]: { connectionCode, userName: partnerData?.userName || partnerData?.name, coupleCode: partnerData?.coupleCode },
+          [uid]: { connectionCode, userName, coupleCode },
+        },
+      };
 
       const promises = [];
-
-      promises.push(crud.updateValueSync(`${PATH_TO.connection}/${connectionCode}`, { timestamp: +new Date() }));
+      promises.push(crud.updateValueSync(`${PATH_TO.connection}/${connectionCode}`, connectionData));
       promises.push(crud.updateValueSync(`${PATH_TO.users}/${partnerUid}/`, { connectionCode }));
       promises.push(crud.updateValueSync(`${PATH_TO.users}/${uid}`, { connectionCode }));
 
