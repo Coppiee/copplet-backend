@@ -37,9 +37,10 @@ class Controller {
     try {
       const uid = res?.locals?.uid;
       const crud = new Crud(getDBRef);
-      const notes = await crud.getValueSync(`${PATH_TO.notes}/${uid}/`);
-      const decryptedNotes = notes.map((note) => {
-        const key = note.private ? keys.privateKey : keys.sharedKey;
+      const { data: notes } = await crud.getValueSync(`${PATH_TO.notes}/${uid}/`);
+      const sharedKey = res?.locals?.userInfo?.sharedKey;
+      const decryptedNotes = Object.values(notes).map((note) => {
+        const key = note.private ? keys.privateKey : sharedKey || keys.privateKey;
 
         let decryptedTitle = note.title;
         let decryptedDescription = note.description;
