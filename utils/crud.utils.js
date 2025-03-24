@@ -225,6 +225,26 @@ class Crud {
     }
   };
 
+  pushSync = (path, data) => {
+    try {
+      return new Promise((resolve, reject) => {
+        const pushKey = this.db.push().key;
+        const ref = this.db.child(path).child(pushKey);
+        ref
+          .set(data)
+          .then(() => {
+            return resolve({ pushKey });
+          })
+          .catch((e) => {
+            return reject(e);
+          });
+      });
+    } catch (error) {
+      console.error('push: ', path, error);
+      return { error: error };
+    }
+  };
+
   sendMulticastMessage = (message) => {
     return new Promise((resolve, reject) => {
       this.messagingAdmin
@@ -249,14 +269,18 @@ class Crud {
     });
   };
 
-  onValue = (path, next) =>{
+  onValue = (path, next) => {
     try {
-      this.db.child(path).on('value', (snapshot) =>{
-        const data = snapshot.val();
-        next(null, data);
-      }, (error) =>{
-        next(error, null);
-      });
+      this.db.child(path).on(
+        'value',
+        (snapshot) => {
+          const data = snapshot.val();
+          next(null, data);
+        },
+        (error) => {
+          next(error, null);
+        }
+      );
     } catch (error) {
       next(error, null);
     }
