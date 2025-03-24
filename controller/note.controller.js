@@ -9,8 +9,8 @@ class Controller {
     try {
       const { title, description, private: isPrivate } = req.body;
       const uid = res?.locals?.uid;
-      const key = isPrivate ? keys.privateKey : keys.sharedKey;
-
+      const sharedKey = res?.locals?.userInfo?.sharedKey;
+      let key = isPrivate ? keys.privateKey : sharedKey || keys.privateKey;
       if (!uid) return res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
 
       const encryptedTitle = encrypt(title, key);
