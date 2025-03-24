@@ -10,4 +10,5 @@ export const PATH_TO = {
   user_maps: '/userMaps',
   connection: '/accountConnections',
   coupleCodeUserRelation: 'userMaps/coupleCodeUserRelation',
+  notes: '/notes',
 };

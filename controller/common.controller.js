@@ -2,6 +2,7 @@ import { MESSAGE, ERROR_CODES } from '../global/global.vars.js';
 import { PATH_TO } from '../global/iprepapp.global.vars.js';
 import Crud from '../utils/crud.utils.js';
 import { getDBRef } from '../db/db.js';
+import { generateAlphanumeric } from '../utils/common.utils.js';
 
 class Controller {
   saveUser = (req, res) => {
@@ -57,6 +58,7 @@ class Controller {
       const connectionData = {
         timestamp: currentTime,
         connectionCode,
+        sharedKey: generateAlphanumeric(process.env.ENCRYPTION_KEY_LENGTH),
         connectedUsers: {
           [partnerUid]: { connectionCode, userName: partnerData?.name, coupleCode: partnerData?.coupleCode },
           [uid]: { connectionCode, userName, coupleCode },
@@ -65,8 +67,8 @@ class Controller {
 
       const promises = [];
       promises.push(crud.updateValueSync(`${PATH_TO.connection}/${connectionCode}`, connectionData));
-      promises.push(crud.updateValueSync(`${PATH_TO.users}/${partnerUid}/`, { connectionCode }));
-      promises.push(crud.updateValueSync(`${PATH_TO.users}/${uid}`, { connectionCode }));
+      promises.push(crud.updateValueSync(`${PATH_TO.users}/${partnerUid}/`, { connectionCode, sharedKey: connectionData.sharedKey }));
+      promises.push(crud.updateValueSync(`${PATH_TO.users}/${uid}`, { connectionCode, sharedKey: connectionData.sharedKey }));
       promises.push(
         crud.updateValueSync(`${PATH_TO.coupleCodeUserRelation}/${partnerCode}`, { connected: true, connectedUid: uid, timestamp: currentTime })
       );
