@@ -118,7 +118,8 @@ class Controller {
 
   updateNote = async (req, res) => {
     try {
-      const { noteId, title, description, type } = req.body;
+      const { title, description, type } = req.body;
+      const noteId = req.params.noteId;
       const uid = res?.locals?.uid;
       if (!noteId) return res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
       const connectionCode = res?.locals?.userInfo?.connectionCode;
@@ -134,10 +135,16 @@ class Controller {
       const encryptedDescription = encrypt(description, key);
       const crud = new Crud(getDBRef);
 
-      await crud.updateValueSync(`${path}/${noteId}`, { ...req.body, title: encryptedTitle, description: encryptedDescription });
       const { data: note } = await crud.getValueSync(`${path}/${noteId}`);
+      if (!note) return res.status(404).json({ status: 404, message: MESSAGE[404], errorCode: ERROR_CODES.DATA_NOT_FOUND });
+      await crud.updateValueSync(`${path}/${noteId}`, { ...note, title: encryptedTitle, description: encryptedDescription });
+      const { data: updatedNote } = await crud.getValueSync(`${path}/${noteId}`);
+      const decryptedTitle = decrypt(updatedNote.title, key);
+      const decryptedDescription = decrypt(updatedNote.description, key);
 
-      return res.status(200).json({ status: 200, message: MESSAGE[200], data: note });
+      return res
+        .status(200)
+        .json({ status: 200, message: MESSAGE[200], data: { ...updatedNote, title: decryptedTitle, description: decryptedDescription } });
     } catch (error) {
       return res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
     }
