@@ -9,9 +9,14 @@ class Controller {
     try {
       const { title, description, private: isPrivate } = req.body;
       const uid = res?.locals?.uid;
+      const connectionCode = res?.locals?.userInfo?.connectionCode;
       const sharedKey = res?.locals?.userInfo?.sharedKey;
       let key = isPrivate ? keys.privateKey : sharedKey || keys.privateKey;
       if (!uid) return res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
+      let path = `${PATH_TO.notes}/${uid}`;
+      if (!isPrivate) {
+        path = `${PATH_TO.connection}/${connectionCode}/notes`;
+      }
 
       const encryptedTitle = encrypt(title, key);
       const encryptedDescription = encrypt(description, key);
@@ -25,8 +30,8 @@ class Controller {
         timestamp: currentTime,
       };
 
-      const noteId = await crud.getPushKey(`${PATH_TO.notes}/${uid}`);
-      await crud.setValueSync(`${PATH_TO.notes}/${uid}/${noteId}`, { ...notes, noteId });
+      const noteId = await crud.getPushKey(path);
+      await crud.setValueSync(`${path}/${noteId}`, { ...notes, noteId });
       return res.status(201).json({ status: 201, message: MESSAGE[201], data: { noteId } });
     } catch (error) {
       return res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
@@ -41,6 +46,33 @@ class Controller {
       const sharedKey = res?.locals?.userInfo?.sharedKey;
       const decryptedNotes = Object.values(notes).map((note) => {
         const key = note.private ? keys.privateKey : sharedKey || keys.privateKey;
+
+        let decryptedTitle = note.title;
+        let decryptedDescription = note.description;
+
+        try {
+          decryptedTitle = decrypt(note.title, key);
+          decryptedDescription = decrypt(note.description, key);
+        } catch (error) {
+          return res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
+        }
+
+        return { ...note, title: decryptedTitle, description: decryptedDescription };
+      });
+      return res.status(200).json({ status: 200, message: MESSAGE[200], data: decryptedNotes });
+    } catch (error) {
+      return res.status(500).json({ status: 500, message: MESSAGE[500], errorCode: ERROR_CODES.SERVER_ERROR });
+    }
+  };
+
+  fetchPublicNotes = async (req, res) => {
+    try {
+      const connectionCode = res?.locals?.userInfo?.connectionCode;
+      const crud = new Crud(getDBRef);
+      const { data: notes } = await crud.getValueSync(`${PATH_TO.connection}/${connectionCode}/notes`);
+      const sharedKey = res?.locals?.userInfo?.sharedKey;
+      const decryptedNotes = Object.values(notes).map((note) => {
+        const key = sharedKey;
 
         let decryptedTitle = note.title;
         let decryptedDescription = note.description;
@@ -86,16 +118,25 @@ class Controller {
 
   updateNote = async (req, res) => {
     try {
-      const { noteId, title, description, private: isPrivate } = req.body;
+      const { noteId, title, description, type } = req.body;
       const uid = res?.locals?.uid;
       if (!noteId) return res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
+      const connectionCode = res?.locals?.userInfo?.connectionCode;
+      const sharedKey = res?.locals?.userInfo?.sharedKey;
 
-      const key = isPrivate ? keys.privateKey : keys.sharedKey;
+      const key = type == 'private' ? keys.privateKey : sharedKey || keys.privateKey;
+      let path = `${PATH_TO.notes}/${uid}/${noteId}`;
+      if (type == 'public') {
+        path = `${PATH_TO.connection}/${connectionCode}/notes`;
+      }
+
       const encryptedTitle = encrypt(title, key);
       const encryptedDescription = encrypt(description, key);
       const crud = new Crud(getDBRef);
-      await crud.updateValueSync(`${PATH_TO.notes}/${uid}/${noteId}`, { ...req.body, title: encryptedTitle, description: encryptedDescription });
-      const { data: note } = await crud.getValueSync(`${PATH_TO.notes}/${uid}/${noteId}`);
+
+      await crud.updateValueSync(`${path}/${noteId}`, { ...req.body, title: encryptedTitle, description: encryptedDescription });
+      const { data: note } = await crud.getValueSync(`${path}/${noteId}`);
+
       return res.status(200).json({ status: 200, message: MESSAGE[200], data: note });
     } catch (error) {
       return res.status(400).json({ status: 400, message: MESSAGE[400], error: ERROR_CODES.BAD_REQUEST });
